@@ -1,0 +1,430 @@
+"measures": [
+  {
+    "name": "Total Orders",
+    "expression": "COUNTROWS(orders_powerbi)",
+    "formatString": "0",
+    "lineageTag": "5bd55efd-210d-44af-9611-95a141654a4b"
+  },
+  {
+    "name": "Total Revenue",
+    "expression": "SUMX(orders_powerbi, orders_powerbi[Product_Quantity] * RELATED(Products[Sale_Price]))",
+    "lineageTag": "b81665fc-579a-472b-9f31-139dd0984f09",
+    "annotations": [
+      {
+        "name": "PBI_FormatHint",
+        "value": "{\"isGeneralNumber\":true}"
+      }
+    ]
+  },
+  {
+    "name": "Total Profit",
+    "expression": [
+      "",
+      "SUMX(",
+      "    orders_powerbi, ",
+      "    (RELATED(Products[Sale_Price]) * orders_powerbi[Product_Quantity]",
+      "))"
+    ],
+    "lineageTag": "b472ceef-253b-44c6-9204-9568562db3e1",
+    "annotations": [
+      {
+        "name": "PBI_FormatHint",
+        "value": "{\"isGeneralNumber\":true}"
+      }
+    ]
+  },
+  {
+    "name": "Unique Customers",
+    "expression": "COUNTROWS(SUMMARIZE(orders_powerbi, orders_powerbi[User_ID]))",
+    "formatString": "0",
+    "lineageTag": "ded1c04a-841a-4e3a-9329-0d1fe3526028"
+  },
+  {
+    "name": "Total Quantity",
+    "expression": "SUM(orders_powerbi[Product_Quantity])",
+    "formatString": "0",
+    "lineageTag": "72f030c4-bd05-4255-a54d-0e78dbd8785d"
+  },
+  {
+    "name": "Profit YTD",
+    "expression": [
+      "",
+      "TOTALYTD(",
+      "    [Total Profit],",
+      "    DateTable[date]",
+      ")",
+      ""
+    ],
+    "lineageTag": "82a6fb27-ad50-416a-a511-48c356abeb61",
+    "annotations": [
+      {
+        "name": "PBI_FormatHint",
+        "value": "{\"isGeneralNumber\":true}"
+      }
+    ]
+  },
+  {
+    "name": "Revenue YTD",
+    "expression": [
+      "",
+      "TOTALYTD(",
+      "    [Total Revenue],",
+      "    DateTable[date]",
+      ")"
+    ],
+    "lineageTag": "1ee52647-ee56-4188-96f3-48623794a7b7",
+    "annotations": [
+      {
+        "name": "PBI_FormatHint",
+        "value": "{\"isGeneralNumber\":true}"
+      }
+    ]
+  },
+  {
+    "name": "Revenue per Customer",
+    "expression": "[Total Revenue] / [Unique Customers]",
+    "lineageTag": "9af73ced-72b9-4b7c-baa9-94fd05c63c09",
+    "annotations": [
+      {
+        "name": "PBI_FormatHint",
+        "value": "{\"isGeneralNumber\":true}"
+      }
+    ]
+  },
+  {
+    "name": "Unique Customers by Category",
+    "expression": [
+      "",
+      "COUNTROWS(",
+      "    SUMMARIZE(",
+      "        FILTER(",
+      "            orders_powerbi,",
+      "            RELATED(Products[Category]) <> BLANK()",
+      "        ),",
+      "        orders_powerbi[User_ID]",
+      "    )",
+      ")",
+      ""
+    ],
+    "formatString": "0",
+    "lineageTag": "e8825568-547a-4012-a410-0d371c0f8211"
+  },
+  {
+    "name": "Customer Rank",
+    "expression": "RANKX(ALL(orders_powerbi[User_ID]), [Total Revenue], , DESC)",
+    "formatString": "0",
+    "lineageTag": "6336807a-6770-4d3a-98f0-bc4e71000b65"
+  },
+  {
+    "name": "Top 20 Revenue",
+    "expression": [
+      "",
+      "IF([Customer Rank] <= 20, [Total Revenue], BLANK())"
+    ],
+    "lineageTag": "3d51812b-a7b9-41cc-a1c3-0d932c3b490e",
+    "annotations": [
+      {
+        "name": "PBI_FormatHint",
+        "value": "{\"isGeneralNumber\":true}"
+      }
+    ]
+  },
+  {
+    "name": "Top Customer",
+    "expression": [
+      "",
+      "VAR TopRevenue = MAXX(ALL(orders_powerbi[User_ID]), [Total Revenue])",
+      "RETURN",
+      "CALCULATE(MAX(orders_powerbi[User_ID]), ",
+      "         FILTER(ALL(orders_powerbi), [Total Revenue] = TopRevenue))"
+    ],
+    "lineageTag": "3c003322-5d6d-4692-bfc1-3d1c32135d93"
+  },
+  {
+    "name": "Top Customer Orders",
+    "expression": [
+      "",
+      "VAR TopCust = [Top Customer]",
+      "RETURN",
+      "CALCULATE(COUNT(orders_powerbi[Product_Quantity]), ",
+      "         FILTER(ALL(orders_powerbi), orders_powerbi[User_ID] = TopCust))"
+    ],
+    "formatString": "0",
+    "lineageTag": "f9c9e981-99f1-448c-bc77-7ae0fbcf7ab9"
+  },
+  {
+    "name": "Top Customer Revenue",
+    "expression": [
+      "",
+      "VAR TopCust = [Top Customer]",
+      "RETURN",
+      "CALCULATE([Total Revenue], ",
+      "         FILTER(ALL(orders_powerbi), orders_powerbi[User_ID] = TopCust))"
+    ],
+    "lineageTag": "10ea1eae-a432-4fc4-a6b1-1bc59b573b65",
+    "annotations": [
+      {
+        "name": "PBI_FormatHint",
+        "value": "{\"isGeneralNumber\":true}"
+      }
+    ]
+  },
+  {
+    "name": "Previous Quarter Profit",
+    "expression": [
+      "",
+      "CALCULATE(",
+      "    [Total Profit],",
+      "    DATEADD(DateTable[Date], -1, QUARTER)",
+      ")"
+    ],
+    "lineageTag": "c56b63e4-b315-4412-8a16-5e3efd3a8d24",
+    "annotations": [
+      {
+        "name": "PBI_FormatHint",
+        "value": "{\"isGeneralNumber\":true}"
+      }
+    ]
+  },
+  {
+    "name": "Previous Quarter Revenue",
+    "expression": [
+      "",
+      "CALCULATE(",
+      "    [Total Revenue],",
+      "    DATEADD(DateTable[Date], -1, QUARTER)",
+      ")"
+    ],
+    "lineageTag": "8f84d824-807e-457b-8db4-297fc7dc6e38",
+    "annotations": [
+      {
+        "name": "PBI_FormatHint",
+        "value": "{\"isGeneralNumber\":true}"
+      }
+    ]
+  },
+  {
+    "name": "Previous Quarter Orders",
+    "expression": [
+      "",
+      "CALCULATE(",
+      "    [Total Orders],",
+      "    DATEADD(DateTable[Date], -1, QUARTER)",
+      ")"
+    ],
+    "formatString": "0",
+    "lineageTag": "3df63d24-d03a-4796-8935-03375fa4a276"
+  },
+  {
+    "name": "Target Profit",
+    "expression": "[Previous Quarter Profit] * 1.05",
+    "lineageTag": "cb849b38-7fde-4b91-a361-a9902026252d",
+    "annotations": [
+      {
+        "name": "PBI_FormatHint",
+        "value": "{\"isGeneralNumber\":true}"
+      }
+    ]
+  },
+  {
+    "name": "Target Revenue",
+    "expression": "[Previous Quarter Revenue] * 1.05",
+    "lineageTag": "3117387f-d79d-4fd9-8547-28094a376619",
+    "annotations": [
+      {
+        "name": "PBI_FormatHint",
+        "value": "{\"isGeneralNumber\":true}"
+      }
+    ]
+  },
+  {
+    "name": "Target Orders",
+    "expression": "[Previous Quarter Orders] * 1.05",
+    "lineageTag": "95c22407-09e2-4874-928d-00277e237e18",
+    "annotations": [
+      {
+        "name": "PBI_FormatHint",
+        "value": "{\"isGeneralNumber\":true}"
+      }
+    ]
+  },
+  {
+    "name": "Current Quarter Orders",
+    "expression": [
+      "",
+      "CALCULATE(",
+      "    [Total Orders],",
+      "    DATESQTD(DateTable[Date])",
+      ")"
+    ],
+    "formatString": "0",
+    "lineageTag": "94fe2786-65f9-40a1-9bd1-fcb779984725"
+  },
+  {
+    "name": "Current Quarter Revenue",
+    "expression": [
+      "",
+      "CALCULATE(",
+      "    [Total Revenue],",
+      "    DATESQTD(DateTable[Date])",
+      ")"
+    ],
+    "lineageTag": "731a7107-65ce-4fbe-ac92-2d97863502ad",
+    "annotations": [
+      {
+        "name": "PBI_FormatHint",
+        "value": "{\"isGeneralNumber\":true}"
+      }
+    ]
+  },
+  {
+    "name": "Current Quarter Profit",
+    "expression": [
+      "",
+      "CALCULATE(",
+      "    [Total Profit],",
+      "    DATESQTD(DateTable[Date])",
+      ")"
+    ],
+    "lineageTag": "bf0a1585-b3b6-4f93-8880-5353a7d67172",
+    "annotations": [
+      {
+        "name": "PBI_FormatHint",
+        "value": "{\"isGeneralNumber\":true}"
+      }
+    ]
+  },
+  {
+    "name": "Product Target Orders",
+    "expression": [
+      "[Previous Quarter Orders] * 1.10",
+      ""
+    ],
+    "lineageTag": "d9909055-3628-4163-87f8-e71298a3b273",
+    "annotations": [
+      {
+        "name": "PBI_FormatHint",
+        "value": "{\"isGeneralNumber\":true}"
+      }
+    ]
+  },
+  {
+    "name": "Product Target Revenue",
+    "expression": "[Previous Quarter Revenue] * 1.10",
+    "lineageTag": "2bad1d01-a6af-4475-a9da-7b6363e74808",
+    "annotations": [
+      {
+        "name": "PBI_FormatHint",
+        "value": "{\"isGeneralNumber\":true}"
+      }
+    ]
+  },
+  {
+    "name": "Product Target Profit",
+    "expression": "[Previous Quarter Profit] * 1.10",
+    "lineageTag": "63bc35f8-ec33-4c7e-916c-eb118dd9a1cf",
+    "annotations": [
+      {
+        "name": "PBI_FormatHint",
+        "value": "{\"isGeneralNumber\":true}"
+      }
+    ]
+  },
+  {
+    "name": "Profit per Order",
+    "expression": "[Total Profit] / [Total Orders]",
+    "lineageTag": "3c52d587-862e-4974-b2fe-e3b1f887570b",
+    "annotations": [
+      {
+        "name": "PBI_FormatHint",
+        "value": "{\"isGeneralNumber\":true}"
+      }
+    ]
+  },
+  {
+    "name": "Profit per Item",
+    "expression": "AVERAGE(Products[sale_price]) - AVERAGE(Products[value])",
+    "lineageTag": "238ceee8-bebb-4818-ba68-bafe92fe23b1",
+    "annotations": [
+      {
+        "name": "PBI_FormatHint",
+        "value": "{\"isGeneralNumber\":true}"
+      }
+    ]
+  },
+  {
+    "name": "Revenue YTD Last Year",
+    "expression": [
+      "",
+      "CALCULATE(",
+      "    [Total Revenue], ",
+      "    DATESYTD(",
+      "        SAMEPERIODLASTYEAR(DateTable[Date])",
+      "    )",
+      ")"
+    ],
+    "lineageTag": "f90f23db-62c6-44cf-bf52-2470a2b38035",
+    "annotations": [
+      {
+        "name": "PBI_FormatHint",
+        "value": "{\"isGeneralNumber\":true}"
+      }
+    ]
+  },
+  {
+    "name": "Revenue Goal",
+    "expression": [
+      "1.20 * [Revenue YTD Last Year]",
+      ""
+    ],
+    "lineageTag": "9ebaee86-fe54-47fa-9dcb-125204b9bcdc",
+    "annotations": [
+      {
+        "name": "PBI_FormatHint",
+        "value": "{\"isGeneralNumber\":true}"
+      }
+    ]
+  },
+  {
+    "name": "Profit YTD Last Year",
+    "expression": [
+      "",
+      "CALCULATE(",
+      "    [Total Profit], ",
+      "    DATESYTD(",
+      "        SAMEPERIODLASTYEAR(DateTable[Date])",
+      "    )",
+      ")",
+      ""
+    ],
+    "lineageTag": "3bd72004-7b29-42a8-8fc8-b4aa99e0c5aa",
+    "annotations": [
+      {
+        "name": "PBI_FormatHint",
+        "value": "{\"isGeneralNumber\":true}"
+      }
+    ]
+  },
+  {
+    "name": "Profit Goal",
+    "expression": [
+      "1.20 * [Profit YTD Last Year]",
+      ""
+    ],
+    "lineageTag": "6fbcabec-5f67-4868-a0d2-94d8b42f5390",
+    "annotations": [
+      {
+        "name": "PBI_FormatHint",
+        "value": "{\"isGeneralNumber\":true}"
+      }
+    ]
+  }
+],
+"annotations": [
+  {
+    "name": "PBI_ResultType",
+    "value": "Table"
+  }
+]
+}
+],
